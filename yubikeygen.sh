@@ -225,13 +225,13 @@ Changing card key attribute for: Authentication key
 
 gpg> key 1 (select)
 gpg> keytocard
-   (1) Signature key
+   (1) Encryption key
 
 gpg> key 1 (deselect)
 gpg> key 2 (select)
 
-gpg> keytocard
-   (2) Encryption key
+gpg> keytocardSignature
+   (2) Signature key
 
 gpg> key 2 (deselect)
 gpg> key 3 (select)
