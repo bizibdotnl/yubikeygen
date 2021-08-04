@@ -5,7 +5,8 @@ echo -e '\e[1;32mGPG Keygen v0.99 (2021-07-16) - by Jilles Groenendijk\e[0m'
 echo WARNING: This script is work in progress, use at your own risk!
 
 echo "Run this script on a live boot such as the ArchLinux ISO"
-echo "Requires a Yubikey with Firmware >=5.2.3 because of EC25519 usage"
+echo "Requires a Yubikey with Firmware < 5.2.3 because of rsa4096 usage"
+echo "for Firmware >= 5.2.3 consult original @jillesdotcom"
 echo
 echo "WARNING THIS WILL DESTROY YOUR CURRENT GPG SETUP!"
 
@@ -62,17 +63,17 @@ echo -e '[\e[1;37m*\e[0m] \e[1;32mCreate LUKS password\e[0m'
 lukspwd=$(dd if=/dev/urandom bs=1M count=1 2>/dev/null| base64| tr -d '\n' | cut -c -100)
 
 echo -e '[\e[1;37m*\e[0m] \e[1;32mCreate Master/Certification key\e[0m'
-gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-gen-key "${fullname} <${email}>" ed25519 cert 2>&1|sed 's/^/    /'
+gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-gen-key "${fullname} <${email}>" rsa4096 cert 2>&1|sed 's/^/    /'
 masterkey=$(ls ${GNUPGHOME}/openpgp-revocs.d/|cut -d\. -f1)
 
 echo -e '[\e[1;37m*\e[0m] \e[1;32mCreate encryption key\e[0m'
-gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-add-key $masterkey cv25519 encr 2y
+gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-add-key $masterkey rsa4096 encr 2y
 
 echo -e '[\e[1;37m*\e[0m] \e[1;32mCreate signing key\e[0m'
-gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-add-key $masterkey ed25519 sign 2y
+gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-add-key $masterkey rsa4096 sign 2y
 
 echo -e '[\e[1;37m*\e[0m] \e[1;32mCreate authentication key\e[0m'
-gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-add-key $masterkey ed25519 auth 2y
+gpg --batch --pinentry-mode loopback --passphrase-file ${GNUPGHOME}/passphrase --quick-add-key $masterkey rsa4096 auth 2y
 
 echo -e '[\e[1;37m*\e[0m] \e[1;32mList all keys\e[0m'
 gpg --list-keys 2>&1|sed 's/^/    /'
@@ -208,29 +209,29 @@ Salutation (M = Mr., F = Ms., or space):
 gpg/card> key-attr                           // Change the key type to EC
 
 Changing card key attribute for: Signature key
+   (1) RSA
    (2) ECC
-   (1) Curve 25519
 
 Changing card key attribute for: Encryption key
+   (1) RSA
    (2) ECC
-   (1) Curve 25519
 
 Changing card key attribute for: Authentication key
+   (1) RSA
    (2) ECC
-   (1) Curve 25519
 
 # gpg --list-key                             // Move the created keys to the YubiKey
 # gpg --edit-key <key>
 
 gpg> key 1 (select)
 gpg> keytocard
-   (2) Encryption key
+   (1) Signature key
 
 gpg> key 1 (deselect)
 gpg> key 2 (select)
 
 gpg> keytocard
-   (1) Signature key
+   (2) Encryption key
 
 gpg> key 2 (deselect)
 gpg> key 3 (select)
